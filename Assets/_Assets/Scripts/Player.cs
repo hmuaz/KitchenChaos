@@ -30,6 +30,7 @@ public class Player : MonoBehaviour
         inputVector = inputVector.normalized;
 
         Vector3 moveDirection = new Vector3(inputVector.x, 0, inputVector.y);
+
         transform.forward = Vector3.Lerp(transform.position, moveDirection, Time.deltaTime * rotateSpeed);
 
         isWalking = moveDirection != Vector3.zero;

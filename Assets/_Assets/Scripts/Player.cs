@@ -12,6 +12,32 @@ public class Player : MonoBehaviour
 
     private bool isWalking;
     private Vector3 lastInteractDir;
+    private void Start()
+    {
+        gameInput.OnInteractAction += GameInput_OnInteractAction;
+    }
+
+    private void GameInput_OnInteractAction(object sender, System.EventArgs e)
+    {
+        Vector2 inputVector = gameInput.GetMovementVectorNormalized();
+
+        Vector3 moveDirection = new Vector3(inputVector.x, 0, inputVector.y);
+
+        if (moveDirection != Vector3.zero)
+        {
+            lastInteractDir = moveDirection;
+        }
+        float interactDistance = 2f;
+
+        if (Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, countersLayerMask))
+        {
+            if (raycastHit.transform.TryGetComponent<ClearCounter>(out ClearCounter clearCounter))
+            {
+                clearCounter.Interact();
+            }
+        }
+    }
+
     private void Update()
     {
         HandleMovement();
@@ -28,17 +54,16 @@ public class Player : MonoBehaviour
 
         Vector3 moveDirection = new Vector3(inputVector.x, 0, inputVector.y);
 
-        if(moveDirection != Vector3.zero )
+        if (moveDirection != Vector3.zero)
         {
             lastInteractDir = moveDirection;
         }
         float interactDistance = 2f;
 
-        if(Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, countersLayerMask))
+        if (Physics.Raycast(transform.position, lastInteractDir, out RaycastHit raycastHit, interactDistance, countersLayerMask))
         {
             if (raycastHit.transform.TryGetComponent<ClearCounter>(out ClearCounter clearCounter))
             {
-                clearCounter.Interact();
             }
         }
     }

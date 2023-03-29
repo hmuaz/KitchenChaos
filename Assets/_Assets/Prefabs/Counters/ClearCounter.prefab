@@ -69,8 +69,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 774a49ae4aff1d24b83f95366db586b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tomatoPrefab: {fileID: 5183574618198114197, guid: 07dc075189ac2954aaba31f80af37ebc,
-    type: 3}
+  kitchenObjectSO: {fileID: 11400000, guid: 5481abd02cf269d4884388a30f78fdbc, type: 2}
   counterTopPoint: {fileID: 4324440013926829943}
 --- !u!1 &7505793277723982714
 GameObject:

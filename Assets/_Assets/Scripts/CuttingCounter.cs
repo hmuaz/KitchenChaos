@@ -1,10 +1,20 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CuttingCounter : BaseCounter
 {
+    public event EventHandler<OnProgressChangedEventArgs> OnProgessChanged; 
+    public class OnProgressChangedEventArgs : EventArgs
+    {
+        public float progressNormalized;
+    }
+    public event EventHandler OnCut;
+
     [SerializeField] private CuttingRecipeSO[] cutKitchenObjectSOArray;
+    private int cuttingProgress;
     public override void Interact(Player player)
     {
         if (!HasKitchenObject())
@@ -17,6 +27,14 @@ public class CuttingCounter : BaseCounter
                 {
                     //Player carrying something that cen be cut
                     player.GetKitchenObject().SetKitchenObjectParent(this);
+                    cuttingProgress = 0;
+
+                    CuttingRecipeSO cuttingRecipeSO = GetCuttingRecipeSOWithInput(GetKitchenObject().GetKitchenObjectSO());
+
+                    OnProgessChanged?.Invoke(this, new OnProgressChangedEventArgs
+                    {
+                        progressNormalized = (float)cuttingProgress / cuttingRecipeSO.cuttingProgressMax
+                    });
                 }
 
             }
@@ -35,6 +53,7 @@ public class CuttingCounter : BaseCounter
             else
             {
                 //Player is not carrying anything
+
                 GetKitchenObject().SetKitchenObjectParent(player);
             }
         }
@@ -44,37 +63,54 @@ public class CuttingCounter : BaseCounter
         if (HasKitchenObject() && HasRecipeWithInput(GetKitchenObject().GetKitchenObjectSO()))
         {
             //There is a KitchenObject here and it can be cut
-            KitchenObjectSO outputKitchenObjectSO = GetOutputForInput(GetKitchenObject().GetKitchenObjectSO());
+            cuttingProgress++;
 
-            GetKitchenObject().DestroySelf();
+            OnCut?.Invoke(this, EventArgs.Empty);
+            CuttingRecipeSO cuttingRecipeSO = GetCuttingRecipeSOWithInput(GetKitchenObject().GetKitchenObjectSO());
 
-            KitchenObject.SpawnKitchenObject(outputKitchenObjectSO, this);
+            OnProgessChanged?.Invoke(this, new OnProgressChangedEventArgs
+            {
+                progressNormalized = (float)cuttingProgress / cuttingRecipeSO.cuttingProgressMax
+            });
 
+            if (cuttingProgress >= cuttingRecipeSO.cuttingProgressMax)
+            {
+                KitchenObjectSO outputKitchenObjectSO = GetOutputForInput(GetKitchenObject().GetKitchenObjectSO());
+
+                GetKitchenObject().DestroySelf();
+
+                KitchenObject.SpawnKitchenObject(outputKitchenObjectSO, this);
+            }
 
         }
     }
     private bool HasRecipeWithInput(KitchenObjectSO inputKitchenObjectSO)
     {
+        CuttingRecipeSO cuttingRecipeSO = GetCuttingRecipeSOWithInput(inputKitchenObjectSO);
+        return cuttingRecipeSO != null;
+    }
+    private KitchenObjectSO GetOutputForInput(KitchenObjectSO inputKitchenObjectSO)
+    {
+        CuttingRecipeSO cuttingRecipeSO = GetCuttingRecipeSOWithInput(inputKitchenObjectSO);
+        if(cuttingRecipeSO != null)
+        {
+            return cuttingRecipeSO.output;
+        }
+        else
+        {
+            return null;
+        }
+    }
+    private CuttingRecipeSO GetCuttingRecipeSOWithInput(KitchenObjectSO inputKitchenObjectSO)
+    {
         foreach (CuttingRecipeSO cuttingRecipeObjectSO in cutKitchenObjectSOArray)
         {
             if (inputKitchenObjectSO == cuttingRecipeObjectSO.input)
             {
-                return true;
-            }
-        }
-        return false;
-    }
-    private KitchenObjectSO GetOutputForInput(KitchenObjectSO inputKitchenObjectSO)
-    {
-        foreach (CuttingRecipeSO cuttingRecipeObjectSO in cutKitchenObjectSOArray)
-        {
-            if(inputKitchenObjectSO == cuttingRecipeObjectSO.input)
-            {
-                return cuttingRecipeObjectSO.output;
+                return cuttingRecipeObjectSO;
             }
         }
         return null;
     }
-
     
 }

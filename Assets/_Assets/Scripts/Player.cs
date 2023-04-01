@@ -131,7 +131,7 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         {
             transform.position += moveDirection * Time.deltaTime * moveSpeed;
         }
-        transform.forward = Vector3.Slerp(transform.position, moveDirection, Time.deltaTime * rotateSpeed);
+        transform.forward = Vector3.Slerp(transform.forward, moveDirection, Time.deltaTime * rotateSpeed);
 
         isWalking = moveDirection != Vector3.zero;
     }
